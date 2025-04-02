@@ -89,6 +89,21 @@ const App: React.FC = () => {
     return { [activeRoom]: roomGroups[activeRoom] || {} };
   };
 
+  // Function to sort types to ensure sensors are displayed first
+  const sortTypeEntries = (entries: [string, AccessoryType[]][]) => {
+    return entries.sort((a, b) => {
+      const [typeA] = a;
+      const [typeB] = b;
+
+      // If typeA is "sensor", it should come first
+      if (typeA.toLowerCase() === "sensor") return -1;
+      // If typeB is "sensor", it should come first
+      if (typeB.toLowerCase() === "sensor") return 1;
+      // Otherwise, sort alphabetically
+      return typeA.localeCompare(typeB);
+    });
+  };
+
   return (
     <Container
       sx={{
@@ -279,7 +294,8 @@ const App: React.FC = () => {
                   {Object.entries(getActiveRoomAccessories()).map(
                     ([roomName, typeGroups]) => (
                       <Box key={roomName}>
-                        {Object.entries(typeGroups).map(
+                        {/* Sort type entries to display sensors first */}
+                        {sortTypeEntries(Object.entries(typeGroups)).map(
                           ([typeName, typeAccessories]) => (
                             <Box key={`${roomName}-${typeName}`} mb={5}>
                               <Heading as="h4" mb={2} sx={{ fontSize: 3 }}>

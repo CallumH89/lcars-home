@@ -361,4 +361,10 @@ export const defaultAccessoriesToDisplay: AccessoryInfoType[] = [
     room: "Hallway",
     name: "Light",
   },
+  {
+    serviceName: "0xa4c138d7f57d3b4c",
+    type: "Sensor",
+    room: "Office",
+    name: "Temperature Sensor",
+  },
 ];
