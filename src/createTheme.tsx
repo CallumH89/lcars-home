@@ -1,18 +1,38 @@
-import type { Theme } from "theme-ui";
+import { link } from "fs";
+import { NavLink, type Theme } from "theme-ui";
 
 export const theme: Theme = {
   colors: {
-    text: "#fff",
+    text: "#000",
     background: "#000",
     primary: "#fff",
-    secondary: "#ccc",
-    accent: "#609",
-    muted: "#666",
+    active: "#fff",
+    inactive: "#bbb",
+    lcarsRed1: "#c44",
+    lcarsRed2: "#f55",
+    lcarsOrange1: "#f80",
+    lcarsOrange2: "#f96",
+    lcarsPurple1: "#96f",
+    lcarsPurple2: "#c9f",
+    lcarsBlue1: "#89f",
+    lcarsBlue2: "#45f",
+    lcarsYellow1: "#fc8",
+    lcarsYellow2: "#fa0",
+    lcarsColourBlack: "#090909",
+    lcarsGap: "10px",
+    lcarsSidebarWidth: "185px",
+    lcarsTopSectionHeight: "215px",
+    lcarsTitleSize: "50px",
+    lcarsSmTitleSize: "36px",
+    lcarsXsTitleSize: "24px",
+    lcarsDividerTopHeight: "16px",
+    lcarsDividerBottomHeight: "16px",
+    lcarsBlockGap: "5px",
+    lcarsBackground: "#090909",
   },
   fonts: {
-    body: "system-ui, sans-serif",
-    heading: "system-ui, sans-serif",
-    monospace: "Menlo, monospace",
+    body: "Antonio, sans-serif",
+    heading: "Antonio, sans-serif",
   },
   images: {
     avatar: {
@@ -28,6 +48,8 @@ export const theme: Theme = {
   },
   buttons: {
     primary: {
+      fontFamily: "Antonio, sans-serif",
+      fontSize: 3,
       minWidth: "200px",
       color: "background",
       paddingY: 3,
@@ -51,5 +73,47 @@ export const theme: Theme = {
     body: 1.5,
     heading: 1.125,
   },
-  space: [0, 4, 8, 16, 32, 64, 128, 256, 512],
+  text: {
+    heading: {
+      fontFamily: "Antonio, sans-serif",
+      fontSize: 4,
+    },
+    NavLink: {
+      fontFamily: "Antonio, sans-serif",
+      fontSize: 3,
+    },
+  },
+  links: {
+    nav: {
+      fontFamily: "Antonio, sans-serif",
+      fontSize: 3,
+      cursor: "pointer",
+    },
+  },
+  space: [
+    0,
+    "5px",
+    "10px",
+    "16px",
+    "10px",
+    "24px",
+    "36px",
+    "50px",
+    "100px",
+    "185px",
+    "215px",
+  ],
+  sizes: [
+    0,
+    "5px",
+    "10px",
+    "16px",
+    "10px",
+    "24px",
+    "36px",
+    "50px",
+    "100px",
+    "185px",
+    "215px",
+  ],
 };

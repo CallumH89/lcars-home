@@ -1,0 +1,17 @@
+// Configuration settings for the LCARS Homebridge
+
+interface HomebridgeConfig {
+  server: string;
+  authEndpoint: string;
+  accessoriesEndpoint: string;
+  username: string;
+  password: string;
+}
+
+export const homebridgeConfig: HomebridgeConfig = {
+  server: "http://homebridgeserver:port",
+  authEndpoint: "/api/auth/login",
+  accessoriesEndpoint: "/api/accessories",
+  username: "USERNAME",
+  password: "PASSWORD",
+};
