@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Box, Flex, Heading, Text, Grid, NavLink } from "theme-ui";
 import LcarsButton from "./components/button.tsx";
 import { theme } from "./createTheme.tsx";
-import { homebridgeConfig } from "./config.ts";
+import { homebridgeConfig, weatherConfig } from "./config.ts";
 import {
   defaultAccessoriesToDisplay,
   getGroupedAccessories,
@@ -10,6 +10,7 @@ import {
   fetchAccessories as fetchAccessoriesHelper,
   handleAccessoryClick as handleAccessoryClickHelper,
   AccessoryType,
+  getWeather,
 } from "./homebridge.helpers.ts";
 import "./fonts.css"; // Import the custom font CSS file
 const App: React.FC = () => {
@@ -18,7 +19,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
-
+  const [weatherData, setWeatherData] = useState<any>(null);
   // Configuration
   const accessoriesToDisplay = defaultAccessoriesToDisplay;
 
@@ -57,6 +58,7 @@ const App: React.FC = () => {
       setAuthToken,
       fetchAccessories
     );
+    getWeather(weatherConfig.key, weatherConfig.postcode, setWeatherData);
   }, []); // Empty dependency array means this runs once on component mount
 
   // Get all unique room names from accessories
@@ -94,6 +96,7 @@ const App: React.FC = () => {
         height: "100%",
         minHeight: "100vh",
         p: 2,
+        fontFamily: "Antonio, sans-serif",
       }}
     >
       {loading ? (
@@ -116,6 +119,7 @@ const App: React.FC = () => {
                   height: 5,
                   backgroundColor: theme?.colors?.lcarsOrange1,
                   mb: 1,
+                  flex: 1,
                 }}
               ></Box>
               <Box
@@ -164,7 +168,12 @@ const App: React.FC = () => {
                 },
               }}
             >
-              <Text sx={{ flex: 1, pb: 6, px: 6 }}>Container</Text>
+              <Flex sx={{ flex: 1, pb: 6, px: 6, gap: 3, zIndex: 2 }}>
+                <Box>{`Outside temp: ${weatherData.current?.[`temp_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
+                <Box>{`Feels like: ${weatherData.current?.[`feelslike_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
+                <Box>{`Condition: ${weatherData.current?.condition?.text}`}</Box>
+                <Box>{`Humidity: ${weatherData.current?.humidity}`}</Box>
+              </Flex>
               <Box
                 sx={{
                   width: "100%",

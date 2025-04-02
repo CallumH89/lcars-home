@@ -294,6 +294,31 @@ export const handleAccessoryClick = async (
   }
 };
 
+export const getWeather = async (
+  key: string,
+  q: string,
+  setWeatherData: Dispatch<SetStateAction<object | null>>
+): Promise<void> => {
+  try {
+    const weatherResponse = await fetch(
+      `http://api.weatherapi.com/v1/forecast.json?key=${key}&q=${q}&days=1&aqi=no&alerts=no`,
+      {
+        method: "get",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const weatherData = await weatherResponse.json();
+    setWeatherData(weatherData);
+    console.log("weatherData successful:", weatherData);
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
 // Export the accessory list for use in other files
 export const defaultAccessoriesToDisplay: AccessoryInfoType[] = [
   {

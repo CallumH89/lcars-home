@@ -15,3 +15,16 @@ export const homebridgeConfig: HomebridgeConfig = {
   username: "USERNAME",
   password: "PASSWORD",
 };
+
+interface WeatherConfig {
+  key: string;
+  postcode: string;
+  scale: "c" | "f";
+}
+
+// https://www.weatherapi.com/
+export const weatherConfig: WeatherConfig = {
+  key: "APIKEY",
+  postcode: "POSTCODE",
+  scale: "c",
+};
