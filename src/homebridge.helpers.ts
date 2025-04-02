@@ -340,6 +340,18 @@ export const defaultAccessoriesToDisplay: AccessoryInfoType[] = [
     name: "Sofa Lamp",
   },
   {
+    serviceName: ["Right", "Left"],
+    type: "Light",
+    room: "Bedroom",
+    name: "Bedside Lamp",
+  },
+  {
+    serviceName: "0xa4c13892132d2083",
+    type: "Sensor",
+    room: "Bedroom",
+    name: "Temperature Sensor",
+  },
+  {
     serviceName: [
       "0xf082c0fffe25ac0c",
       "0xf082c0fffe6ef559",

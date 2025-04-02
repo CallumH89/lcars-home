@@ -12,7 +12,9 @@ import {
   AccessoryType,
   getWeather,
 } from "./homebridge.helpers.ts";
+import { GroupedSensorDisplay } from "./components/sensorDisplay.tsx";
 import "./fonts.css"; // Import the custom font CSS file
+
 const App: React.FC = () => {
   const [accessories, setAccessories] = useState<AccessoryType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -169,10 +171,14 @@ const App: React.FC = () => {
               }}
             >
               <Flex sx={{ flex: 1, pb: 6, px: 6, gap: 3, zIndex: 2 }}>
-                <Box>{`Outside temp: ${weatherData.current?.[`temp_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
-                <Box>{`Feels like: ${weatherData.current?.[`feelslike_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
-                <Box>{`Condition: ${weatherData.current?.condition?.text}`}</Box>
-                <Box>{`Humidity: ${weatherData.current?.humidity}`}</Box>
+                {weatherData?.current && (
+                  <>
+                    <Box>{`Outside temp: ${weatherData.current[`temp_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
+                    <Box>{`Feels like: ${weatherData.current[`feelslike_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
+                    <Box>{`Condition: ${weatherData.current.condition?.text}`}</Box>
+                    <Box>{`Humidity: ${weatherData.current.humidity}%`}</Box>
+                  </>
+                )}
               </Flex>
               <Box
                 sx={{
@@ -275,9 +281,9 @@ const App: React.FC = () => {
                       <Box key={roomName}>
                         {Object.entries(typeGroups).map(
                           ([typeName, typeAccessories]) => (
-                            <Box key={`${roomName}-${typeName}`} mb={4}>
+                            <Box key={`${roomName}-${typeName}`} mb={5}>
                               <Heading as="h4" mb={2} sx={{ fontSize: 3 }}>
-                                {typeName}s ({typeAccessories.length})
+                                {typeName}s
                               </Heading>
 
                               <Flex
@@ -287,13 +293,23 @@ const App: React.FC = () => {
                                   gap: 3,
                                 }}
                               >
-                                {typeAccessories.map((accessory) => (
-                                  <LcarsButton
-                                    key={accessory.uniqueId}
-                                    handleAccessoryClick={handleAccessoryClick}
-                                    accessory={accessory}
-                                  />
-                                ))}
+                                {typeAccessories.map((accessory) =>
+                                  // Check if the accessory type is "sensor" and render the GroupedSensorDisplay component instead
+                                  typeName.toLowerCase() === "sensor" ? (
+                                    <GroupedSensorDisplay
+                                      key={accessory.uniqueId}
+                                      accessory={accessory}
+                                    />
+                                  ) : (
+                                    <LcarsButton
+                                      key={accessory.uniqueId}
+                                      handleAccessoryClick={
+                                        handleAccessoryClick
+                                      }
+                                      accessory={accessory}
+                                    />
+                                  )
+                                )}
                               </Flex>
                             </Box>
                           )

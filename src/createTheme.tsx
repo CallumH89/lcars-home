@@ -1,5 +1,4 @@
-import { link } from "fs";
-import { NavLink, type Theme } from "theme-ui";
+import { Theme } from "theme-ui";
 
 export const theme: Theme = {
   colors: {
@@ -18,6 +17,8 @@ export const theme: Theme = {
     lcarsBlue2: "#45f",
     lcarsYellow1: "#fc8",
     lcarsYellow2: "#fa0",
+    lcarsGreen1: "#cc6",
+    lcarsGreen2: "#993",
     lcarsColourBlack: "#090909",
     lcarsBackground: "#090909",
   },

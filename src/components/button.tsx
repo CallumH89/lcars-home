@@ -18,8 +18,8 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
       onClick={() => handleAccessoryClick(accessory)}
       sx={{
         bg: !!accessory.values.On
-          ? theme?.colors?.lcarsRed2
-          : theme?.colors?.lcarsRed1,
+          ? theme?.colors?.lcarsGreen1
+          : theme?.colors?.lcarsRed2,
         color: theme?.colors?.text,
         px: 3,
         py: 2,
