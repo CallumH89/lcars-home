@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Container, Box, Flex, Heading, Text, Grid, NavLink } from "theme-ui";
 import LcarsButton from "./components/button.tsx";
 import { theme } from "./createTheme.tsx";
@@ -9,6 +9,8 @@ import {
   authenticate,
   fetchAccessories as fetchAccessoriesHelper,
   handleAccessoryClick as handleAccessoryClickHelper,
+  refreshAccessoryState,
+  refreshRoomAccessories,
   AccessoryType,
   getCurrentDateTime,
 } from "./homebridge.helpers.ts";
@@ -26,6 +28,24 @@ const App: React.FC = () => {
     getCurrentDateTime("-")
   );
   const [weatherRefreshTrigger, setWeatherRefreshTrigger] = useState<number>(0);
+
+  // Use refs to maintain stable references for callback dependencies
+  const accessoriesRef = useRef<AccessoryType[]>([]);
+  const authTokenRef = useRef<string | null>(null);
+  const activeRoomRef = useRef<string | null>(null);
+
+  // Update refs when state changes
+  useEffect(() => {
+    accessoriesRef.current = accessories;
+  }, [accessories]);
+
+  useEffect(() => {
+    authTokenRef.current = authToken;
+  }, [authToken]);
+
+  useEffect(() => {
+    activeRoomRef.current = activeRoom;
+  }, [activeRoom]);
 
   // Configuration
   const accessoriesToDisplay = defaultAccessoriesToDisplay;
@@ -46,12 +66,30 @@ const App: React.FC = () => {
   const handleAccessoryClick = (accessory: AccessoryType): void => {
     handleAccessoryClickHelper(
       accessory,
-      authToken,
+      authTokenRef.current,
       homebridgeConfig.server,
       homebridgeConfig.accessoriesEndpoint,
       setAccessories
     );
   };
+
+  // Function to refresh all accessories in the active room - using helper
+  const refreshActiveRoomAccessories = useCallback(() => {
+    const currentActiveRoom = activeRoomRef.current;
+    if (!currentActiveRoom) return;
+
+    console.log(`Refreshing accessories in room: ${currentActiveRoom}`);
+
+    refreshRoomAccessories(
+      currentActiveRoom,
+      accessoriesRef.current,
+      accessoriesToDisplay,
+      authTokenRef.current,
+      homebridgeConfig.server,
+      homebridgeConfig.accessoriesEndpoint,
+      setAccessories
+    );
+  }, []); // Empty dependency array since we're using refs
 
   // Set up the clock to refresh every minute
   useEffect(() => {
@@ -81,6 +119,23 @@ const App: React.FC = () => {
     // Clean up the interval on component unmount
     return () => clearInterval(weatherInterval);
   }, []);
+
+  // Set up active room accessory refresh every 5 minutes
+  useEffect(() => {
+    if (!activeRoom) return;
+
+    // Refresh once when activeRoom changes
+    refreshActiveRoomAccessories();
+
+    // Set up an interval to refresh active room accessories every 5 minutes
+    const accessoryRefreshInterval = setInterval(() => {
+      console.log(`Scheduled refresh for room: ${activeRoom}`);
+      refreshActiveRoomAccessories();
+    }, 300000); // 300000 ms = 5 minutes
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(accessoryRefreshInterval);
+  }, [activeRoom]); // Only re-run when activeRoom changes
 
   useEffect(() => {
     // Call the authenticate helper
@@ -135,6 +190,12 @@ const App: React.FC = () => {
       // Otherwise, sort alphabetically
       return typeA.localeCompare(typeB);
     });
+  };
+
+  // Handle room selection with accessory refresh
+  const handleRoomSelect = (roomName: string) => {
+    setActiveRoom(roomName);
+    // Refresh will be triggered by the useEffect watching activeRoom
   };
 
   return (
@@ -284,7 +345,7 @@ const App: React.FC = () => {
                 {getRooms().map((roomName) => (
                   <NavLink
                     key={roomName}
-                    onClick={() => setActiveRoom(roomName)}
+                    onClick={() => handleRoomSelect(roomName)}
                     sx={{
                       height: "auto",
                       mb: 1,

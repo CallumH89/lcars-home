@@ -294,6 +294,80 @@ export const handleAccessoryClick = async (
   }
 };
 
+// Function to refresh the state of an individual accessory
+export const refreshAccessoryState = async (
+  uniqueId: string,
+  authToken: string | null,
+  homebridgeServer: string,
+  accessoriesEndpoint: string,
+  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>
+): Promise<void> => {
+  if (!authToken) return;
+
+  try {
+    // Make a GET request to get the latest state
+    const response = await fetch(
+      `${homebridgeServer}${accessoriesEndpoint}/${uniqueId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error(
+        `Failed to refresh accessory ${uniqueId}: ${response.statusText}`
+      );
+      return;
+    }
+
+    const updatedAccessory = await response.json();
+
+    // Update the accessories state with the refreshed accessory
+    setAccessories((prevAccessories) =>
+      prevAccessories.map((acc) =>
+        acc.uniqueId === updatedAccessory.uniqueId ? updatedAccessory : acc
+      )
+    );
+  } catch (err) {
+    console.error(`Error refreshing accessory ${uniqueId}:`, err);
+  }
+};
+
+// Function to refresh all accessories in a specific room
+export const refreshRoomAccessories = (
+  roomName: string,
+  accessories: AccessoryType[],
+  accessoriesToDisplay: AccessoryInfoType[],
+  authToken: string | null,
+  homebridgeServer: string,
+  accessoriesEndpoint: string,
+  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>
+): void => {
+  if (!roomName || !authToken) return;
+
+  console.log(`Refreshing accessories in room: ${roomName}`);
+
+  const roomGroups = getGroupedAccessories(accessories, accessoriesToDisplay);
+  const roomAccessories = roomGroups[roomName] || {};
+
+  // Iterate through all types and accessories in the active room
+  Object.values(roomAccessories).forEach((typeAccessories) => {
+    typeAccessories.forEach((accessory) => {
+      refreshAccessoryState(
+        accessory.uniqueId,
+        authToken,
+        homebridgeServer,
+        accessoriesEndpoint,
+        setAccessories
+      );
+    });
+  });
+};
+
 export const getWeather = async (
   key: string,
   q: string,
