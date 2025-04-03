@@ -18,12 +18,12 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
       onClick={() => handleAccessoryClick(accessory)}
       sx={{
         bg: !!accessory.values.On
-          ? theme?.colors?.lcarsGreen1
-          : theme?.colors?.lcarsRed2,
+          ? theme?.colors?.lcarsGreen2
+          : theme?.colors?.lcarsInactive,
         color: theme?.colors?.text,
         px: 3,
         py: 2,
-        borderRadius: "4px",
+        borderRadius: "100vmax",
         cursor: "pointer",
         transition: "background-color 0.2s",
         "&:hover": {
@@ -45,10 +45,10 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
           sx={{
             position: "absolute",
             top: 1,
-            right: 1,
+            right: 2,
             fontSize: "10px",
-            backgroundColor: theme?.colors?.lcarsOrange2,
-            color: "#000",
+            backgroundColor: theme?.colors?.lcarsInactive,
+            color: theme?.colors?.lcarsWhite,
             borderRadius: "50%",
             width: "18px",
             height: "18px",

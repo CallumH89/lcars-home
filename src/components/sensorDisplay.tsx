@@ -72,13 +72,16 @@ const isBatteryAccessory = (accessory: AccessoryType): boolean => {
   return false;
 };
 
-// Create a SensorDisplay component for sensor type accessories
-export const SensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
-  accessory,
-}) => {
-  // Helper function to get the first value from an object
-  const getFirstValueWithUnit = (values: Record<string, any> | undefined) => {
-    if (!values || Object.keys(values).length === 0) return null;
+// Create a SensorBar component for individual sensors in LCARS style
+export const SensorBar: React.FC<{
+  accessory: AccessoryType;
+  label: string;
+  highlightColor?: any;
+}> = ({ accessory, label, highlightColor = theme?.colors?.lcarsYellow1 }) => {
+  // Helper function to get the value and unit
+  const getValueWithUnit = (values: Record<string, any> | undefined) => {
+    if (!values || Object.keys(values).length === 0)
+      return { value: 0, unit: "", name: "" };
 
     const key = Object.keys(values)[0];
     const value = values[key];
@@ -97,12 +100,11 @@ export const SensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
     return { value, unit, name: key };
   };
 
-  // Get the value and unit for display
-  const valueData = getFirstValueWithUnit(accessory.values);
+  const valueData = getValueWithUnit(accessory.values);
 
-  // Determine how to display the value
-  const displayValue = () => {
-    if (!valueData) return "";
+  // Format the value for display
+  const getFormattedValue = () => {
+    if (!valueData) return "0";
 
     let formattedValue = valueData.value;
 
@@ -115,21 +117,221 @@ export const SensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
     }
 
     // Add appropriate unit symbols
-    let unitSymbol = "";
+    let unitDisplay = "";
     switch (valueData.unit) {
       case "celsius":
-        unitSymbol = "°C";
+        unitDisplay = "DEGREES";
         break;
       case "percentage":
-        unitSymbol = "%";
+        unitDisplay = "%";
         break;
       default:
-        unitSymbol = valueData.unit ? ` ${valueData.unit}` : "";
+        unitDisplay = valueData.unit ? valueData.unit.toUpperCase() : "";
     }
 
-    return `${formattedValue}${unitSymbol}`;
+    return `${formattedValue} ${unitDisplay}`;
   };
 
+  // Calculate the percentage for the bar
+  const calculateBarPercentage = () => {
+    if (!valueData || typeof valueData.value !== "number") return 0;
+
+    // For temperature sensors
+    if (valueData.name.includes("Temperature")) {
+      // Assuming temp range from -10 to 40°C
+      const min = -20;
+      const max = 40;
+      const percentage = Math.min(
+        100,
+        Math.max(0, ((valueData.value - min) / (max - min)) * 100)
+      );
+      return percentage;
+    }
+
+    // For humidity and other percentage-based sensors
+    if (valueData.unit === "percentage") {
+      return valueData.value;
+    }
+
+    // Default for other types
+    return 50; // Default to 50% if we can't determine
+  };
+
+  const barPercentage = calculateBarPercentage();
+
+  return (
+    <Flex sx={{ alignItems: "center", width: "100%", mb: 3 }}>
+      {/* Left label */}
+      <Box
+        sx={{
+          width: 8,
+          mr: 0,
+          textAlign: "left",
+          color: highlightColor,
+          px: 0,
+          fontWeight: "bold",
+          height: 6,
+          alignContent: "center",
+        }}
+      >
+        {label}
+      </Box>
+
+      {/* Progress bar */}
+      <Box
+        sx={{
+          flex: 1,
+          height: 6,
+          backgroundColor: theme?.colors?.lcarsBackground,
+          border: `1px solid ${highlightColor}`,
+          position: "relative",
+          mr: 2,
+        }}
+      >
+        <Box
+          sx={{
+            height: "100%",
+            width: `${barPercentage}%`,
+            backgroundColor: highlightColor,
+            borderRight: `2px solid ${theme?.colors?.lcarsBackground}`,
+          }}
+        >
+          {/* Vertical lines pattern */}
+          <Flex
+            sx={{
+              height: "100%",
+              width: "100%",
+              alignItems: "stretch",
+              justifyContent: "space-between",
+            }}
+          >
+            {Array.from({ length: 50 }).map((_, i) => (
+              <Box
+                key={i}
+                sx={{
+                  width: "1px",
+                  height: "100%",
+                  backgroundColor: theme?.colors?.lcarsBackground,
+                  opacity: 0.7,
+                }}
+              />
+            ))}
+          </Flex>
+        </Box>
+      </Box>
+
+      {/* Right value display */}
+      <Box
+        sx={{
+          width: "100px",
+          p: 0,
+          fontWeight: "bold",
+          color: highlightColor,
+          textAlign: "right",
+          alignContent: "center",
+        }}
+      >
+        {getFormattedValue()}
+      </Box>
+    </Flex>
+  );
+};
+
+// Component to handle grouped sensor display in LCARS style
+export const GroupedSensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
+  accessory,
+}) => {
+  if (
+    !accessory.isGroup ||
+    !accessory.groupedAccessories ||
+    accessory.groupedAccessories.length === 0
+  ) {
+    // If it's not a group or has no grouped accessories, fall back to simple display
+    return <SingleSensorDisplay accessory={accessory} />;
+  }
+
+  // Filter out battery accessories from the grouped accessories
+  const filteredAccessories = accessory.groupedAccessories.filter(
+    (groupedAccessory) => !isBatteryAccessory(groupedAccessory)
+  );
+
+  // If after filtering there are no accessories left, don't render anything
+  if (filteredAccessories.length === 0) {
+    return null;
+  }
+
+  // Get the group name
+  const getGroupName = () => {
+    return accessory.nameInfo?.replace(/\s*Sensor\s*$/i, "") || "SENSOR STATUS";
+  };
+
+  // Function to get the appropriate label for a sensor
+  const getSensorLabel = (sensor: AccessoryType) => {
+    if (sensor.type?.includes("Temperature")) {
+      return sensor.roomInfo?.toUpperCase() || "TEMPERATURE";
+    }
+    if (sensor.type?.includes("Humidity")) {
+      return "HUMIDITY";
+    }
+    // Add more sensor types as needed
+    return (
+      sensor.humanType?.replace(/\s*Sensor\s*$/i, "").toUpperCase() || "SENSOR"
+    );
+  };
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "800px",
+        backgroundColor: theme?.colors?.lcarsBackground,
+        borderRadius: "8px",
+        overflow: "hidden",
+        mb: 4,
+        border: `1px solid ${theme?.colors?.lcarsPurple1}`,
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          backgroundColor: theme?.colors?.lcarsPurple1,
+          color: theme?.colors?.lcarsBackground,
+          fontWeight: "bold",
+          textAlign: "left",
+          pl: 3,
+          fontSize: 2,
+          height: 5,
+        }}
+      >
+        {getGroupName()}
+      </Box>
+
+      {/* Sensor bars */}
+      <Box sx={{ p: 3 }}>
+        {filteredAccessories.map((sensor, index) => {
+          // Alternate colors for different sensor types
+          const highlightColor = sensor.type?.includes("Temperature")
+            ? theme?.colors?.lcarsOrange1
+            : theme?.colors?.lcarsYellow1;
+
+          return (
+            <SensorBar
+              key={sensor.uniqueId}
+              accessory={sensor}
+              label={getSensorLabel(sensor)}
+              highlightColor={highlightColor}
+            />
+          );
+        })}
+      </Box>
+    </Box>
+  );
+};
+
+// Fallback for single sensors
+export const SingleSensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
+  accessory,
+}) => {
   // Get human-readable name
   const getDisplayName = () => {
     // If nameInfo is available, use it
@@ -153,6 +355,51 @@ export const SensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
     return "Device";
   };
 
+  // Determine how to display the value
+  const displayValue = () => {
+    if (!accessory.values || Object.keys(accessory.values).length === 0)
+      return "";
+
+    const key = Object.keys(accessory.values)[0];
+    const value = accessory.values[key];
+
+    // Find the matching characteristic to get the unit
+    let unit = "";
+    if (accessory.serviceCharacteristics) {
+      const characteristic = accessory.serviceCharacteristics.find(
+        (c) => c.type === key
+      );
+      if (characteristic && characteristic.unit) {
+        unit = characteristic.unit;
+      }
+    }
+
+    let formattedValue = value;
+
+    // Format values appropriately
+    if (typeof formattedValue === "number") {
+      // Use toFixed(1) for temperatures, otherwise whole numbers
+      formattedValue = key.includes("Temperature")
+        ? formattedValue.toFixed(1)
+        : Math.round(formattedValue);
+    }
+
+    // Add appropriate unit symbols
+    let unitSymbol = "";
+    switch (unit) {
+      case "celsius":
+        unitSymbol = "°C";
+        break;
+      case "percentage":
+        unitSymbol = "%";
+        break;
+      default:
+        unitSymbol = unit ? ` ${unit}` : "";
+    }
+
+    return `${formattedValue}${unitSymbol}`;
+  };
+
   return (
     <Box
       sx={{
@@ -173,67 +420,5 @@ export const SensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
         {displayValue()}
       </Text>
     </Box>
-  );
-};
-
-// Component to handle grouped sensor display
-export const GroupedSensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
-  accessory,
-}) => {
-  if (
-    !accessory.isGroup ||
-    !accessory.groupedAccessories ||
-    accessory.groupedAccessories.length === 0
-  ) {
-    // If it's not a group or has no grouped accessories, just render a single sensor display
-    return <SensorDisplay accessory={accessory} />;
-  }
-
-  // Filter out battery accessories from the grouped accessories
-  const filteredAccessories = accessory.groupedAccessories.filter(
-    (groupedAccessory) => !isBatteryAccessory(groupedAccessory)
-  );
-
-  // If after filtering there are no accessories left, don't render anything
-  if (filteredAccessories.length === 0) {
-    return null;
-  }
-
-  return (
-    <Flex
-      sx={{
-        flexDirection: "column",
-        gap: 2,
-        border: `1px solid ${theme?.colors?.lcarsYellow1}`,
-        borderRadius: "4px",
-        padding: 2,
-        backgroundColor: theme?.colors?.lcarsBackground,
-      }}
-    >
-      <Text
-        sx={{
-          fontWeight: "bold",
-          color: theme?.colors?.lcarsYellow1,
-          textAlign: "center",
-        }}
-      >
-        {accessory.nameInfo || "Sensor Group"}
-      </Text>
-
-      <Flex sx={{ gap: 2, flexWrap: "wrap" }}>
-        {filteredAccessories.map((groupedAccessory) => (
-          <Box
-            key={groupedAccessory.uniqueId}
-            sx={{
-              flex: "1 1 auto",
-              minWidth: "120px",
-              maxWidth: "200px",
-            }}
-          >
-            <SensorDisplay accessory={groupedAccessory} />
-          </Box>
-        ))}
-      </Flex>
-    </Flex>
   );
 };

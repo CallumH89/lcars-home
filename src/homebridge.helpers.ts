@@ -349,7 +349,7 @@ export const defaultAccessoriesToDisplay: AccessoryInfoType[] = [
     serviceName: "0xa4c13892132d2083",
     type: "Sensor",
     room: "Bedroom",
-    name: "Temperature Sensor",
+    name: "Internal Sensor Status",
   },
   {
     serviceName: [

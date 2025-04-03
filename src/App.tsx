@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Box, Flex, Heading, Text, Grid, NavLink } from "theme-ui";
 import LcarsButton from "./components/button.tsx";
 import { theme } from "./createTheme.tsx";
-import { homebridgeConfig, weatherConfig } from "./config.ts";
+import { homebridgeConfig } from "./config.ts";
 import {
   defaultAccessoriesToDisplay,
   getGroupedAccessories,
@@ -10,10 +10,10 @@ import {
   fetchAccessories as fetchAccessoriesHelper,
   handleAccessoryClick as handleAccessoryClickHelper,
   AccessoryType,
-  getWeather,
 } from "./homebridge.helpers.ts";
 import { GroupedSensorDisplay } from "./components/sensorDisplay.tsx";
 import "./fonts.css"; // Import the custom font CSS file
+import WeatherDisplay from "./components/weatherDisplay.tsx";
 
 const App: React.FC = () => {
   const [accessories, setAccessories] = useState<AccessoryType[]>([]);
@@ -21,7 +21,6 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
-  const [weatherData, setWeatherData] = useState<any>(null);
   // Configuration
   const accessoriesToDisplay = defaultAccessoriesToDisplay;
 
@@ -60,7 +59,6 @@ const App: React.FC = () => {
       setAuthToken,
       fetchAccessories
     );
-    getWeather(weatherConfig.key, weatherConfig.postcode, setWeatherData);
   }, []); // Empty dependency array means this runs once on component mount
 
   // Get all unique room names from accessories
@@ -109,11 +107,13 @@ const App: React.FC = () => {
       sx={{
         backgroundAttachment: "fixed",
         bg: theme?.colors?.lcarsBackground,
-        color: theme?.colors?.lcarsOrange1,
+        color: theme?.colors?.lcarsPurple1,
         height: "100%",
         minHeight: "100vh",
         p: 2,
         fontFamily: "Antonio, sans-serif",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {loading ? (
@@ -134,6 +134,7 @@ const App: React.FC = () => {
                 sx={{
                   width: "100%",
                   height: 5,
+                  minHeight: 5,
                   backgroundColor: theme?.colors?.lcarsOrange1,
                   mb: 1,
                   flex: 1,
@@ -147,13 +148,9 @@ const App: React.FC = () => {
                   color: theme?.colors?.lcarsBackground,
                   py: 2,
                   borderRadius: "0 0 0 100px",
-                  textAlign: "right",
-                  alignContent: "end",
                   position: "relative",
                 }}
-              >
-                <Heading as="h3">Home</Heading>
-              </Box>
+              ></Box>
             </Flex>
             <Flex
               sx={{
@@ -186,60 +183,60 @@ const App: React.FC = () => {
               }}
             >
               <Flex sx={{ flex: 1, pb: 6, px: 6, gap: 3, zIndex: 2 }}>
-                {weatherData?.current && (
-                  <>
-                    <Box>{`Outside temp: ${weatherData.current[`temp_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
-                    <Box>{`Feels like: ${weatherData.current[`feelslike_${weatherConfig.scale}`]}${weatherConfig.scale === "c" ? "°C" : "°F"}`}</Box>
-                    <Box>{`Condition: ${weatherData.current.condition?.text}`}</Box>
-                    <Box>{`Humidity: ${weatherData.current.humidity}%`}</Box>
-                  </>
-                )}
+                <WeatherDisplay />
               </Flex>
-              <Box
-                sx={{
-                  width: "100%",
-                  height: 5,
-                  backgroundColor: theme?.colors?.lcarsPurple1,
-                  alignSelf: "end",
-                }}
-              ></Box>
+              <Flex sx={{ flexDirection: "row", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 5,
+                    backgroundColor: theme?.colors?.lcarsPurple1,
+                  }}
+                ></Box>
+                <Box
+                  sx={{
+                    flex: 1,
+                    height: 5,
+                    backgroundColor: theme?.colors?.lcarsPurple2,
+                  }}
+                ></Box>
+              </Flex>
             </Flex>
           </Grid>
 
-          <Grid gap={0} columns={["182px 1fr"]}>
+          <Grid
+            gap={0}
+            columns={["182px 1fr"]}
+            sx={{ position: "relative", flex: 1 }}
+          >
             {/* Left sidebar with room navigation */}
-            <Box>
+            <Flex sx={{ flexDirection: "column", position: "relative" }}>
               <Box
                 sx={{
                   height: "100px",
                   mb: 1,
                   backgroundColor: theme?.colors?.lcarsBlue1,
-                  color: theme?.colors?.lcarsBackground,
                   padding: 2,
                   borderRadius: "100px 0 0 0",
-                  textAlign: "right",
-                  alignContent: "end",
                 }}
-              >
-                <Heading as="h3">Rooms</Heading>
-              </Box>
+              ></Box>
               <Flex sx={{ flexDirection: "column" }}>
                 {getRooms().map((roomName) => (
                   <NavLink
                     key={roomName}
                     onClick={() => setActiveRoom(roomName)}
                     sx={{
-                      height: 8,
+                      height: "auto",
                       mb: 1,
                       backgroundColor: theme?.colors?.lcarsYellow2,
                       padding: 2,
                       borderRadius: 0,
-                      textAlign: "right",
-                      alignContent: "end",
+                      textAlign: "center",
+                      alignContent: "center",
                       bg:
                         activeRoom === roomName
-                          ? theme?.colors?.lcarsYellow1
-                          : theme?.colors?.lcarsYellow2,
+                          ? theme?.colors?.lcarsYellow3
+                          : theme?.colors?.lcarsYellow1,
                       color: theme?.colors?.lcarsBackground,
                     }}
                   >
@@ -247,7 +244,24 @@ const App: React.FC = () => {
                   </NavLink>
                 ))}
               </Flex>
-            </Box>
+
+              <Box
+                sx={{
+                  mb: 1,
+                  height: 2,
+                  backgroundColor: theme?.colors?.lcarsPurple1,
+                  padding: 2,
+                }}
+              ></Box>
+              <Box
+                sx={{
+                  mb: 1,
+                  backgroundColor: theme?.colors?.lcarsRed1,
+                  padding: 2,
+                  flex: 1,
+                }}
+              ></Box>
+            </Flex>
 
             {/* Right content area showing the active room's accessories */}
             <Box
@@ -278,13 +292,24 @@ const App: React.FC = () => {
                 },
               }}
             >
-              <Box
-                sx={{
-                  width: "100%",
-                  height: 5,
-                  backgroundColor: theme?.colors?.lcarsBlue1,
-                }}
-              ></Box>
+              <Flex sx={{ flexDirection: "row", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 5,
+                    backgroundColor: theme?.colors?.lcarsBlue1,
+                    alignSelf: "end",
+                  }}
+                ></Box>
+                <Box
+                  sx={{
+                    flex: 1,
+                    height: 5,
+                    backgroundColor: theme?.colors?.lcarsBlue2,
+                    alignSelf: "end",
+                  }}
+                ></Box>
+              </Flex>
               {activeRoom ? (
                 <Box sx={{ py: 6, px: 6, position: "relative", zIndex: 2 }}>
                   <Heading as="h2" mb={3}>
@@ -298,9 +323,11 @@ const App: React.FC = () => {
                         {sortTypeEntries(Object.entries(typeGroups)).map(
                           ([typeName, typeAccessories]) => (
                             <Box key={`${roomName}-${typeName}`} mb={5}>
-                              <Heading as="h4" mb={2} sx={{ fontSize: 3 }}>
-                                {typeName}s
-                              </Heading>
+                              {typeName.toLowerCase() !== "sensor" && (
+                                <Heading as="h4" mb={2} sx={{ fontSize: 3 }}>
+                                  {typeName}s
+                                </Heading>
+                              )}
 
                               <Flex
                                 sx={{
