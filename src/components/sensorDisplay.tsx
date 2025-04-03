@@ -288,13 +288,13 @@ export const GroupedSensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
         borderRadius: "8px",
         overflow: "hidden",
         mb: 4,
-        border: `1px solid ${theme?.colors?.lcarsPurple1}`,
+        border: `1px solid ${theme?.colors?.lcarsYellow1}`,
       }}
     >
       {/* Header */}
       <Box
         sx={{
-          backgroundColor: theme?.colors?.lcarsPurple1,
+          backgroundColor: theme?.colors?.lcarsYellow1,
           color: theme?.colors?.lcarsBackground,
           fontWeight: "bold",
           textAlign: "left",

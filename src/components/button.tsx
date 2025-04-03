@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Text } from "theme-ui";
+import { Box, Button, Flex, Text } from "theme-ui";
 import { theme } from "../createTheme.tsx";
 
 interface Props {
@@ -13,54 +13,76 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
   const accessoryCount = isGroup ? accessory.groupedAccessories.length : 1;
 
   return (
-    <Button
-      key={accessory.uniqueId}
-      onClick={() => handleAccessoryClick(accessory)}
-      sx={{
-        bg: !!accessory.values.On
-          ? theme?.colors?.lcarsGreen2
-          : theme?.colors?.lcarsInactive,
-        color: theme?.colors?.text,
-        px: 3,
-        py: 2,
-        borderRadius: "100vmax",
-        cursor: "pointer",
-        transition: "background-color 0.2s",
-        "&:hover": {
-          bg: "secondary",
-        },
-        minWidth: "200px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        position: "relative",
-      }}
-    >
-      {accessory.nameInfo || `Accessory`}
+    <Flex>
+      <Box
+        sx={{
+          bg: !!accessory.values.On
+            ? theme?.colors?.lcarsYellow3
+            : theme?.colors?.lcarsInactive,
+          color: theme?.colors?.text,
+          px: 3,
+          py: 2,
+          mr: 1,
+          borderRadius: "100vmax 0 0 100vmax",
+          cursor: "pointer",
+          transition: "background-color 0.2s",
+          "&:hover": {
+            bg: "secondary",
+          },
+          minWidth: "40px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          position: "relative",
+        }}
+      ></Box>
+      <Button
+        key={accessory.uniqueId}
+        onClick={() => handleAccessoryClick(accessory)}
+        sx={{
+          bg: theme?.colors?.lcarsYellow1,
+          color: theme?.colors?.text,
+          px: 3,
+          py: 2,
+          borderRadius: "0 100vmax 100vmax 0",
+          cursor: "pointer",
+          transition: "background-color 0.2s",
+          "&:hover": {
+            bg: "secondary",
+          },
+          minWidth: "200px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          position: "relative",
+        }}
+      >
+        {accessory.nameInfo || `Accessory`}
 
-      {/* If this is a group, add a small indicator */}
-      {isGroup && (
-        <Text
-          as="div"
-          sx={{
-            position: "absolute",
-            top: 1,
-            right: 2,
-            fontSize: "10px",
-            backgroundColor: theme?.colors?.lcarsInactive,
-            color: theme?.colors?.lcarsWhite,
-            borderRadius: "50%",
-            width: "18px",
-            height: "18px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {accessoryCount}
-        </Text>
-      )}
-    </Button>
+        {/* If this is a group, add a small indicator */}
+        {/*isGroup && (
+          <Text
+            as="div"
+            sx={{
+              position: "absolute",
+              top: 1,
+              right: 2,
+              fontSize: "10px",
+              backgroundColor: theme?.colors?.lcarsInactive,
+              color: theme?.colors?.lcarsWhite,
+              borderRadius: "50%",
+              width: "18px",
+              height: "18px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {accessoryCount}
+          </Text>
+        )*/}
+      </Button>
+    </Flex>
   );
 };
 

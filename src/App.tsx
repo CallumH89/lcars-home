@@ -10,6 +10,7 @@ import {
   fetchAccessories as fetchAccessoriesHelper,
   handleAccessoryClick as handleAccessoryClickHelper,
   AccessoryType,
+  getCurrentDate,
 } from "./homebridge.helpers.ts";
 import { GroupedSensorDisplay } from "./components/sensorDisplay.tsx";
 import "./fonts.css"; // Import the custom font CSS file
@@ -107,7 +108,6 @@ const App: React.FC = () => {
       sx={{
         backgroundAttachment: "fixed",
         bg: theme?.colors?.lcarsBackground,
-        color: theme?.colors?.lcarsPurple1,
         height: "100%",
         minHeight: "100vh",
         p: 2,
@@ -122,7 +122,11 @@ const App: React.FC = () => {
         <Text sx={{ textAlign: "center", color: "red" }}>Error: {error}</Text>
       ) : (
         <>
-          <Grid gap={0} columns={["182px 1fr"]}>
+          <Grid
+            gap={0}
+            columns={["182px 1fr"]}
+            sx={{ color: theme?.colors?.lcarsPurple1 }}
+          >
             {/* Left sidebar with room navigation */}
             <Flex
               sx={{
@@ -135,7 +139,7 @@ const App: React.FC = () => {
                   width: "100%",
                   height: 5,
                   minHeight: 5,
-                  backgroundColor: theme?.colors?.lcarsOrange1,
+                  backgroundColor: theme?.colors?.lcarsPurple1,
                   mb: 1,
                   flex: 1,
                 }}
@@ -197,7 +201,25 @@ const App: React.FC = () => {
                   sx={{
                     flex: 1,
                     height: 5,
-                    backgroundColor: theme?.colors?.lcarsPurple2,
+                    backgroundColor: theme?.colors?.lcarsPurple1,
+                  }}
+                ></Box>
+                <Box
+                  sx={{
+                    height: 5,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    display: "flex",
+                    fontSize: 3,
+                  }}
+                >
+                  {getCurrentDate("-")}
+                </Box>
+                <Box
+                  sx={{
+                    width: 5,
+                    height: 5,
+                    backgroundColor: theme?.colors?.lcarsPurple1,
                   }}
                 ></Box>
               </Flex>
@@ -207,7 +229,11 @@ const App: React.FC = () => {
           <Grid
             gap={0}
             columns={["182px 1fr"]}
-            sx={{ position: "relative", flex: 1 }}
+            sx={{
+              position: "relative",
+              flex: 1,
+              color: theme?.colors?.lcarsYellow3,
+            }}
           >
             {/* Left sidebar with room navigation */}
             <Flex sx={{ flexDirection: "column", position: "relative" }}>
@@ -215,7 +241,7 @@ const App: React.FC = () => {
                 sx={{
                   height: "100px",
                   mb: 1,
-                  backgroundColor: theme?.colors?.lcarsBlue1,
+                  backgroundColor: theme?.colors?.lcarsYellow3,
                   padding: 2,
                   borderRadius: "100px 0 0 0",
                 }}
@@ -249,14 +275,14 @@ const App: React.FC = () => {
                 sx={{
                   mb: 1,
                   height: 2,
-                  backgroundColor: theme?.colors?.lcarsPurple1,
+                  backgroundColor: theme?.colors?.lcarsYellow3,
                   padding: 2,
                 }}
               ></Box>
               <Box
                 sx={{
                   mb: 1,
-                  backgroundColor: theme?.colors?.lcarsRed1,
+                  backgroundColor: theme?.colors?.lcarsYellow3,
                   padding: 2,
                   flex: 1,
                 }}
@@ -272,7 +298,7 @@ const App: React.FC = () => {
                   display: "block",
                   width: "60px",
                   height: "60px",
-                  background: `linear-gradient(to bottom right, ${theme?.colors?.lcarsBlue1} 50%, ${theme?.colors?.lcarsColourBlack} 50%)`,
+                  background: `linear-gradient(to bottom right, ${theme?.colors?.lcarsYellow3} 50%, ${theme?.colors?.lcarsColourBlack} 50%)`,
                   position: "absolute",
                   left: 0,
                   top: "24px",
@@ -297,7 +323,7 @@ const App: React.FC = () => {
                   sx={{
                     width: 8,
                     height: 5,
-                    backgroundColor: theme?.colors?.lcarsBlue1,
+                    backgroundColor: theme?.colors?.lcarsYellow3,
                     alignSelf: "end",
                   }}
                 ></Box>
@@ -305,17 +331,13 @@ const App: React.FC = () => {
                   sx={{
                     flex: 1,
                     height: 5,
-                    backgroundColor: theme?.colors?.lcarsBlue2,
+                    backgroundColor: theme?.colors?.lcarsYellow3,
                     alignSelf: "end",
                   }}
                 ></Box>
               </Flex>
               {activeRoom ? (
                 <Box sx={{ py: 6, px: 6, position: "relative", zIndex: 2 }}>
-                  <Heading as="h2" mb={3}>
-                    {activeRoom}
-                  </Heading>
-
                   {Object.entries(getActiveRoomAccessories()).map(
                     ([roomName, typeGroups]) => (
                       <Box key={roomName}>
