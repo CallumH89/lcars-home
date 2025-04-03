@@ -1,7 +1,5 @@
-// Helper functions for processing and managing Homebridge accessories
 import { Dispatch, SetStateAction } from "react";
 
-// Types
 export interface AccessoryValue {
   On: boolean;
   [key: string]: any;
@@ -26,6 +24,12 @@ export interface AccessoryType {
   [key: string]: any;
 }
 
+export interface AuthData {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+}
+
 interface GroupedDefinition {
   [key: string]: {
     info: AccessoryInfoType;
@@ -39,7 +43,6 @@ interface RoomGroups {
   };
 }
 
-// Get the filtered accessories that match our display list
 export const getFilteredAccessories = (
   accessories: AccessoryType[],
   accessoriesToDisplay: AccessoryInfoType[]
@@ -53,7 +56,6 @@ export const getFilteredAccessories = (
   );
 };
 
-// Get room and type information for an accessory
 export const getAccessoryInfo = (
   accessory: AccessoryType,
   accessoriesToDisplay: AccessoryInfoType[]
@@ -68,7 +70,6 @@ export const getAccessoryInfo = (
   );
 };
 
-// Group accessories by room and then by type
 export const getGroupedAccessories = (
   accessories: AccessoryType[],
   accessoriesToDisplay: AccessoryInfoType[]
@@ -78,14 +79,10 @@ export const getGroupedAccessories = (
     accessoriesToDisplay
   );
   const roomGroups: RoomGroups = {};
-
-  // Create a map to group accessories by their group definition
   const groupedByDefinition: GroupedDefinition = {};
 
-  // First, organize accessories by their group definition
   filteredAccessories.forEach((accessory) => {
     const info = getAccessoryInfo(accessory, accessoriesToDisplay);
-    // Create a unique key for this group
     const groupKey = `${info.room}-${info.type}-${info.name}`;
 
     if (!groupedByDefinition[groupKey]) {
@@ -98,7 +95,6 @@ export const getGroupedAccessories = (
     groupedByDefinition[groupKey].accessories.push(accessory);
   });
 
-  // Now create the room/type hierarchy with grouped accessories
   Object.values(groupedByDefinition).forEach(({ info, accessories }) => {
     const { room, type, name } = info;
 
@@ -110,7 +106,6 @@ export const getGroupedAccessories = (
       roomGroups[room][type] = [];
     }
 
-    // Create a "virtual" accessory that represents the group
     const primaryAccessory = accessories[0];
     roomGroups[room][type].push({
       ...primaryAccessory,
@@ -125,7 +120,6 @@ export const getGroupedAccessories = (
   return roomGroups;
 };
 
-// Authentication function
 export const authenticate = async (
   homebridgeServer: string,
   authEndpoint: string,
@@ -134,6 +128,7 @@ export const authenticate = async (
   setLoading: Dispatch<SetStateAction<boolean>>,
   setError: Dispatch<SetStateAction<string | null>>,
   setAuthToken: Dispatch<SetStateAction<string | null>>,
+  setTokenExpiry: Dispatch<SetStateAction<number | null>>,
   fetchAccessories: (token: string) => Promise<void>
 ): Promise<void> => {
   try {
@@ -156,14 +151,18 @@ export const authenticate = async (
       throw new Error(`Authentication failed! Status: ${authResponse.status}`);
     }
 
-    const authData = await authResponse.json();
+    const authData: AuthData = await authResponse.json();
     console.log("Authentication successful:", authData);
 
-    // Save the auth token
     const token = authData.access_token;
     setAuthToken(token);
 
-    // Fetch accessories with the token
+    const expiryTime = Date.now() + authData.expires_in * 1000;
+    setTokenExpiry(expiryTime);
+    console.log(
+      `Token will expire at: ${new Date(expiryTime).toLocaleString()}`
+    );
+
     await fetchAccessories(token);
   } catch (err) {
     console.error("Error:", err);
@@ -172,7 +171,6 @@ export const authenticate = async (
   }
 };
 
-// Function to fetch accessories
 export const fetchAccessories = async (
   token: string,
   homebridgeServer: string,
@@ -210,7 +208,6 @@ export const fetchAccessories = async (
   }
 };
 
-// Handle button click for an accessory - Toggle the On value
 export const handleAccessoryClick = async (
   accessory: AccessoryType,
   authToken: string | null,
@@ -225,7 +222,6 @@ export const handleAccessoryClick = async (
       return;
     }
 
-    // Check if this is a group of accessories
     const accessories =
       accessory.isGroup && accessory.groupedAccessories
         ? accessory.groupedAccessories
@@ -234,11 +230,9 @@ export const handleAccessoryClick = async (
       `Toggling ${accessories.length} accessories in group: ${accessory.nameInfo}`
     );
 
-    // Determine the new value (toggle the current state)
     const currentValue = accessory.values.On;
     const newValue = !currentValue;
 
-    // Toggle each accessory in the group
     for (const acc of accessories) {
       if (!acc.uniqueId) {
         console.error(
@@ -247,13 +241,11 @@ export const handleAccessoryClick = async (
         continue;
       }
 
-      // Prepare the request body for updating the accessory
       const updateBody = {
         characteristicType: "On",
         value: newValue,
       };
 
-      // Make the PUT request to toggle the accessory
       const updateResponse = await fetch(
         `${homebridgeServer}${accessoriesEndpoint}/${acc.uniqueId}`,
         {
@@ -275,10 +267,8 @@ export const handleAccessoryClick = async (
       console.log(`Accessory ${acc.serviceName} toggled to: ${newValue}`);
     }
 
-    // Update the local state to reflect the change for all accessories in the group
     setAccessories((prevAccessories) =>
       prevAccessories.map((item) => {
-        // Check if this item is part of the group we just toggled
         if (accessories.some((acc) => acc.uniqueId === item.uniqueId)) {
           return { ...item, values: { ...item.values, On: newValue } };
         }
@@ -287,14 +277,12 @@ export const handleAccessoryClick = async (
     );
   } catch (err) {
     console.error("Error toggling accessory:", err);
-    // Optionally show an error message to the user
     alert(
       `Failed to toggle ${accessory.nameInfo}: ${err instanceof Error ? err.message : "Unknown error"}`
     );
   }
 };
 
-// Function to refresh the state of an individual accessory
 export const refreshAccessoryState = async (
   uniqueId: string,
   authToken: string | null,
@@ -305,7 +293,6 @@ export const refreshAccessoryState = async (
   if (!authToken) return;
 
   try {
-    // Make a GET request to get the latest state
     const response = await fetch(
       `${homebridgeServer}${accessoriesEndpoint}/${uniqueId}`,
       {
@@ -326,7 +313,6 @@ export const refreshAccessoryState = async (
 
     const updatedAccessory = await response.json();
 
-    // Update the accessories state with the refreshed accessory
     setAccessories((prevAccessories) =>
       prevAccessories.map((acc) =>
         acc.uniqueId === updatedAccessory.uniqueId ? updatedAccessory : acc
@@ -337,7 +323,6 @@ export const refreshAccessoryState = async (
   }
 };
 
-// Function to refresh all accessories in a specific room
 export const refreshRoomAccessories = (
   roomName: string,
   accessories: AccessoryType[],
@@ -354,7 +339,6 @@ export const refreshRoomAccessories = (
   const roomGroups = getGroupedAccessories(accessories, accessoriesToDisplay);
   const roomAccessories = roomGroups[roomName] || {};
 
-  // Iterate through all types and accessories in the active room
   Object.values(roomAccessories).forEach((typeAccessories) => {
     typeAccessories.forEach((accessory) => {
       refreshAccessoryState(
@@ -404,13 +388,18 @@ export function getCurrentDateTime(separator = "") {
   return `${year}${separator}${month < 10 ? `0${month}` : `${month}`}${separator}${date < 10 ? `0${date}` : `${date}`} ${hours < 10 ? `0${hours}` : `${hours}`}:${minutes < 10 ? `0${minutes}` : `${minutes}`}`;
 }
 
-// Export the accessory list for use in other files
 export const defaultAccessoriesToDisplay: AccessoryInfoType[] = [
   {
     serviceName: "0x7cc6b6fffe38d018",
     type: "Light",
     room: "Kitchen",
-    name: "Kitchen Light",
+    name: "Light",
+  },
+  {
+    serviceName: "0x60b647fffe93d290",
+    type: "Light",
+    room: "Kitchen",
+    name: "Spotlight",
   },
   {
     serviceName: "0x6c5cb1fffe60d10b",

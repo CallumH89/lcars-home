@@ -53,7 +53,8 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
           minWidth: "200px",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          textAlign: "left",
+          alignItems: "left",
           position: "relative",
         }}
       >

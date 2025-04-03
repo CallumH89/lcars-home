@@ -15,7 +15,7 @@ import {
   getCurrentDateTime,
 } from "./homebridge.helpers.ts";
 import { GroupedSensorDisplay } from "./components/sensorDisplay.tsx";
-import "./fonts.css"; // Import the custom font CSS file
+import "./fonts.css";
 import WeatherDisplay from "./components/weatherDisplay.tsx";
 
 const App: React.FC = () => {
@@ -23,18 +23,18 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [tokenExpiry, setTokenExpiry] = useState<number | null>(null);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
   const [currentDateTime, setCurrentDateTime] = useState<string>(
     getCurrentDateTime("-")
   );
   const [weatherRefreshTrigger, setWeatherRefreshTrigger] = useState<number>(0);
 
-  // Use refs to maintain stable references for callback dependencies
   const accessoriesRef = useRef<AccessoryType[]>([]);
   const authTokenRef = useRef<string | null>(null);
   const activeRoomRef = useRef<string | null>(null);
+  const tokenExpiryRef = useRef<number | null>(null);
 
-  // Update refs when state changes
   useEffect(() => {
     accessoriesRef.current = accessories;
   }, [accessories]);
@@ -47,10 +47,12 @@ const App: React.FC = () => {
     activeRoomRef.current = activeRoom;
   }, [activeRoom]);
 
-  // Configuration
+  useEffect(() => {
+    tokenExpiryRef.current = tokenExpiry;
+  }, [tokenExpiry]);
+
   const accessoriesToDisplay = defaultAccessoriesToDisplay;
 
-  // Function to fetch accessories - wrapper for the helper
   const fetchAccessories = async (token: string): Promise<void> => {
     await fetchAccessoriesHelper(
       token,
@@ -62,7 +64,36 @@ const App: React.FC = () => {
     );
   };
 
-  // Handle button click - wrapper for the helper
+  const handleAuthentication = useCallback(async () => {
+    await authenticate(
+      homebridgeConfig.server,
+      homebridgeConfig.authEndpoint,
+      homebridgeConfig.username,
+      homebridgeConfig.password,
+      setLoading,
+      setError,
+      setAuthToken,
+      setTokenExpiry,
+      fetchAccessories
+    );
+  }, []);
+
+  const checkAndRefreshToken = useCallback(async () => {
+    const currentExpiry = tokenExpiryRef.current;
+    if (!currentExpiry) return;
+
+    const timeUntilExpiry = currentExpiry - Date.now();
+
+    if (timeUntilExpiry < 600000) {
+      console.log("Token expiring soon, refreshing authentication...");
+      await handleAuthentication();
+    } else {
+      console.log(
+        `Token valid for ${Math.floor(timeUntilExpiry / 60000)} more minutes`
+      );
+    }
+  }, [handleAuthentication]);
+
   const handleAccessoryClick = (accessory: AccessoryType): void => {
     handleAccessoryClickHelper(
       accessory,
@@ -73,7 +104,6 @@ const App: React.FC = () => {
     );
   };
 
-  // Function to refresh all accessories in the active room - using helper
   const refreshActiveRoomAccessories = useCallback(() => {
     const currentActiveRoom = activeRoomRef.current;
     if (!currentActiveRoom) return;
@@ -89,69 +119,59 @@ const App: React.FC = () => {
       homebridgeConfig.accessoriesEndpoint,
       setAccessories
     );
-  }, []); // Empty dependency array since we're using refs
+  }, []);
 
-  // Set up the clock to refresh every minute
   useEffect(() => {
-    // Update the time immediately
     setCurrentDateTime(getCurrentDateTime("-"));
 
-    // Set up an interval to update the time every minute
     const timeInterval = setInterval(() => {
       setCurrentDateTime(getCurrentDateTime("-"));
-    }, 60000); // 60000 ms = 1 minute
+    }, 60000);
 
-    // Clean up the interval on component unmount
     return () => clearInterval(timeInterval);
   }, []);
 
-  // Set up weather refresh every 30 minutes
   useEffect(() => {
-    // Trigger initial weather fetch
     setWeatherRefreshTrigger((prev) => prev + 1);
 
-    // Set up an interval to refresh weather every 30 minutes
     const weatherInterval = setInterval(() => {
       console.log("Refreshing weather data...");
       setWeatherRefreshTrigger((prev) => prev + 1);
-    }, 1800000); // 1800000 ms = 30 minutes
+    }, 1800000);
 
-    // Clean up the interval on component unmount
     return () => clearInterval(weatherInterval);
   }, []);
 
-  // Set up active room accessory refresh every 5 minutes
   useEffect(() => {
     if (!activeRoom) return;
 
-    // Refresh once when activeRoom changes
     refreshActiveRoomAccessories();
 
-    // Set up an interval to refresh active room accessories every 5 minutes
-    const accessoryRefreshInterval = setInterval(() => {
+    const accessoryRefreshInterval = setInterval(async () => {
       console.log(`Scheduled refresh for room: ${activeRoom}`);
-      refreshActiveRoomAccessories();
-    }, 300000); // 300000 ms = 5 minutes
 
-    // Clean up the interval on component unmount
+      await checkAndRefreshToken();
+
+      refreshActiveRoomAccessories();
+    }, 300000);
+
     return () => clearInterval(accessoryRefreshInterval);
-  }, [activeRoom]); // Only re-run when activeRoom changes
+  }, [activeRoom, checkAndRefreshToken, refreshActiveRoomAccessories]);
 
   useEffect(() => {
-    // Call the authenticate helper
-    authenticate(
-      homebridgeConfig.server,
-      homebridgeConfig.authEndpoint,
-      homebridgeConfig.username,
-      homebridgeConfig.password,
-      setLoading,
-      setError,
-      setAuthToken,
-      fetchAccessories
-    );
-  }, []); // Empty dependency array means this runs once on component mount
+    if (!tokenExpiry) return;
 
-  // Get all unique room names from accessories
+    const tokenCheckInterval = setInterval(async () => {
+      await checkAndRefreshToken();
+    }, 3600000);
+
+    return () => clearInterval(tokenCheckInterval);
+  }, [tokenExpiry, checkAndRefreshToken]);
+
+  useEffect(() => {
+    handleAuthentication();
+  }, [handleAuthentication]);
+
   const getRooms = (): string[] => {
     if (loading || accessories.length === 0) return [];
 
@@ -159,7 +179,6 @@ const App: React.FC = () => {
     return Object.keys(roomGroups);
   };
 
-  // Set the first room as active when data is loaded
   useEffect(() => {
     if (!loading && accessories.length > 0 && activeRoom === null) {
       const rooms = getRooms();
@@ -169,7 +188,6 @@ const App: React.FC = () => {
     }
   }, [loading, accessories, activeRoom]);
 
-  // Get the grouped accessories for the active room
   const getActiveRoomAccessories = () => {
     if (!activeRoom) return {};
 
@@ -177,25 +195,19 @@ const App: React.FC = () => {
     return { [activeRoom]: roomGroups[activeRoom] || {} };
   };
 
-  // Function to sort types to ensure sensors are displayed first
   const sortTypeEntries = (entries: [string, AccessoryType[]][]) => {
     return entries.sort((a, b) => {
       const [typeA] = a;
       const [typeB] = b;
 
-      // If typeA is "sensor", it should come first
       if (typeA.toLowerCase() === "sensor") return -1;
-      // If typeB is "sensor", it should come first
       if (typeB.toLowerCase() === "sensor") return 1;
-      // Otherwise, sort alphabetically
       return typeA.localeCompare(typeB);
     });
   };
 
-  // Handle room selection with accessory refresh
   const handleRoomSelect = (roomName: string) => {
     setActiveRoom(roomName);
-    // Refresh will be triggered by the useEffect watching activeRoom
   };
 
   return (
@@ -222,7 +234,6 @@ const App: React.FC = () => {
             columns={["182px 1fr"]}
             sx={{ color: theme?.colors?.lcarsPurple1 }}
           >
-            {/* Left sidebar with room navigation */}
             <Flex
               sx={{
                 flexDirection: "column",
@@ -330,7 +341,6 @@ const App: React.FC = () => {
               color: theme?.colors?.lcarsYellow3,
             }}
           >
-            {/* Left sidebar with room navigation */}
             <Flex sx={{ flexDirection: "column", position: "relative" }}>
               <Box
                 sx={{
@@ -384,7 +394,6 @@ const App: React.FC = () => {
               ></Box>
             </Flex>
 
-            {/* Right content area showing the active room's accessories */}
             <Box
               sx={{
                 position: "relative",
@@ -436,7 +445,6 @@ const App: React.FC = () => {
                   {Object.entries(getActiveRoomAccessories()).map(
                     ([roomName, typeGroups]) => (
                       <Box key={roomName}>
-                        {/* Sort type entries to display sensors first */}
                         {sortTypeEntries(Object.entries(typeGroups)).map(
                           ([typeName, typeAccessories]) => (
                             <Box key={`${roomName}-${typeName}`} mb={5}>
@@ -454,7 +462,6 @@ const App: React.FC = () => {
                                 }}
                               >
                                 {typeAccessories.map((accessory) =>
-                                  // Check if the accessory type is "sensor" and render the GroupedSensorDisplay component instead
                                   typeName.toLowerCase() === "sensor" ? (
                                     <GroupedSensorDisplay
                                       key={accessory.uniqueId}
