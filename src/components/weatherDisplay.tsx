@@ -4,11 +4,17 @@ import { theme } from "../createTheme.tsx";
 import { weatherConfig } from "../config.ts";
 import { getWeather } from "../homebridge.helpers.ts";
 
-const WeatherDisplay: React.FC = () => {
+interface WeatherDisplayProps {
+  refreshTrigger?: number; // Optional prop to trigger a refresh
+}
+
+const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ refreshTrigger }) => {
   const [weatherData, setWeatherData] = useState<any>(null);
+
   useEffect(() => {
     getWeather(weatherConfig.key, weatherConfig.postcode, setWeatherData);
-  }, []); // Empty dependency array means this runs once on component mount
+  }, [refreshTrigger]); // Will re-run whenever refreshTrigger changes
+
   return (
     weatherData?.current && (
       <>

@@ -10,7 +10,7 @@ import {
   fetchAccessories as fetchAccessoriesHelper,
   handleAccessoryClick as handleAccessoryClickHelper,
   AccessoryType,
-  getCurrentDate,
+  getCurrentDateTime,
 } from "./homebridge.helpers.ts";
 import { GroupedSensorDisplay } from "./components/sensorDisplay.tsx";
 import "./fonts.css"; // Import the custom font CSS file
@@ -22,6 +22,11 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
+  const [currentDateTime, setCurrentDateTime] = useState<string>(
+    getCurrentDateTime("-")
+  );
+  const [weatherRefreshTrigger, setWeatherRefreshTrigger] = useState<number>(0);
+
   // Configuration
   const accessoriesToDisplay = defaultAccessoriesToDisplay;
 
@@ -47,6 +52,35 @@ const App: React.FC = () => {
       setAccessories
     );
   };
+
+  // Set up the clock to refresh every minute
+  useEffect(() => {
+    // Update the time immediately
+    setCurrentDateTime(getCurrentDateTime("-"));
+
+    // Set up an interval to update the time every minute
+    const timeInterval = setInterval(() => {
+      setCurrentDateTime(getCurrentDateTime("-"));
+    }, 60000); // 60000 ms = 1 minute
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(timeInterval);
+  }, []);
+
+  // Set up weather refresh every 30 minutes
+  useEffect(() => {
+    // Trigger initial weather fetch
+    setWeatherRefreshTrigger((prev) => prev + 1);
+
+    // Set up an interval to refresh weather every 30 minutes
+    const weatherInterval = setInterval(() => {
+      console.log("Refreshing weather data...");
+      setWeatherRefreshTrigger((prev) => prev + 1);
+    }, 1800000); // 1800000 ms = 30 minutes
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(weatherInterval);
+  }, []);
 
   useEffect(() => {
     // Call the authenticate helper
@@ -187,7 +221,7 @@ const App: React.FC = () => {
               }}
             >
               <Flex sx={{ flex: 1, pb: 6, px: 6, gap: 3, zIndex: 2 }}>
-                <WeatherDisplay />
+                <WeatherDisplay refreshTrigger={weatherRefreshTrigger} />
               </Flex>
               <Flex sx={{ flexDirection: "row", gap: 1 }}>
                 <Box
@@ -213,7 +247,7 @@ const App: React.FC = () => {
                     fontSize: 3,
                   }}
                 >
-                  {getCurrentDate("-")}
+                  {currentDateTime}
                 </Box>
                 <Box
                   sx={{
