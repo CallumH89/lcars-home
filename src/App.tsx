@@ -9,7 +9,6 @@ import {
   authenticate,
   fetchAccessories as fetchAccessoriesHelper,
   handleAccessoryClick as handleAccessoryClickHelper,
-  refreshAccessoryState,
   refreshRoomAccessories,
   AccessoryType,
   getCurrentDateTime,
@@ -219,6 +218,7 @@ const App: React.FC = () => {
         minHeight: "100vh",
         p: 2,
         fontFamily: "Antonio, sans-serif",
+        textTransform: "uppercase",
         display: "flex",
         flexDirection: "column",
       }}
@@ -292,7 +292,9 @@ const App: React.FC = () => {
                 },
               }}
             >
-              <Flex sx={{ flex: 1, pb: 6, px: 6, gap: 3, zIndex: 2 }}>
+              <Flex
+                sx={{ flex: 1, pb: 6, px: 6, gap: 3, zIndex: 2, ml: "40px" }}
+              >
                 <WeatherDisplay refreshTrigger={weatherRefreshTrigger} />
               </Flex>
               <Flex sx={{ flexDirection: "row", gap: 1 }}>
@@ -334,7 +336,7 @@ const App: React.FC = () => {
 
           <Grid
             gap={0}
-            columns={["182px 1fr"]}
+            columns={["182px 40px 1fr"]}
             sx={{
               position: "relative",
               flex: 1,
@@ -357,7 +359,7 @@ const App: React.FC = () => {
                     key={roomName}
                     onClick={() => handleRoomSelect(roomName)}
                     sx={{
-                      height: "auto",
+                      height: 7,
                       mb: 1,
                       backgroundColor: theme?.colors?.lcarsYellow2,
                       padding: 2,
@@ -393,7 +395,6 @@ const App: React.FC = () => {
                 }}
               ></Box>
             </Flex>
-
             <Box
               sx={{
                 position: "relative",
@@ -422,6 +423,50 @@ const App: React.FC = () => {
                 },
               }}
             >
+              <Flex sx={{ flexDirection: "column" }}>
+                <Box
+                  sx={{
+                    height: 5,
+                    backgroundColor: theme?.colors?.lcarsYellow3,
+                    padding: 2,
+                  }}
+                ></Box>
+                <Box
+                  sx={{
+                    height: "76px",
+                    mb: 1,
+                    backgroundColor: theme?.colors?.lcarsBlack,
+                    padding: 2,
+                  }}
+                ></Box>
+                <Flex sx={{ flexDirection: "column" }}>
+                  {getRooms().map((roomName) => (
+                    <Box
+                      onClick={() => handleRoomSelect(roomName)}
+                      key={roomName}
+                      sx={{
+                        bg:
+                          activeRoom === roomName
+                            ? theme?.colors?.lcarsYellow3
+                            : theme?.colors?.lcarsInactive,
+                        color: theme?.colors?.text,
+                        width: "40px",
+                        borderRadius: "0 100vmax 100vmax 0",
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        position: "relative",
+                        height: 7,
+                        mb: 1,
+                        ml: 1,
+                      }}
+                    ></Box>
+                  ))}
+                </Flex>
+              </Flex>
+            </Box>
+            <Box>
               <Flex sx={{ flexDirection: "row", gap: 1 }}>
                 <Box
                   sx={{

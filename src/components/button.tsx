@@ -56,6 +56,7 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
           textAlign: "left",
           alignItems: "left",
           position: "relative",
+          textTransform: "uppercase",
         }}
       >
         {accessory.nameInfo || `Accessory`}

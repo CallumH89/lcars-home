@@ -76,8 +76,7 @@ const isBatteryAccessory = (accessory: AccessoryType): boolean => {
 export const SensorBar: React.FC<{
   accessory: AccessoryType;
   label: string;
-  highlightColor?: any;
-}> = ({ accessory, label, highlightColor = theme?.colors?.lcarsYellow1 }) => {
+}> = ({ accessory, label }) => {
   // Helper function to get the value and unit
   const getValueWithUnit = (values: Record<string, any> | undefined) => {
     if (!values || Object.keys(values).length === 0)
@@ -140,7 +139,7 @@ export const SensorBar: React.FC<{
     if (valueData.name.includes("Temperature")) {
       // Assuming temp range from -10 to 40°C
       const min = -20;
-      const max = 40;
+      const max = 50;
       const percentage = Math.min(
         100,
         Math.max(0, ((valueData.value - min) / (max - min)) * 100)
@@ -156,9 +155,31 @@ export const SensorBar: React.FC<{
     // Default for other types
     return 50; // Default to 50% if we can't determine
   };
-
+  // Calculate the percentage for the bar
+  const calculateBarColor = (barPercentage: number) => {
+    if (barPercentage < 15) {
+      return theme?.colors?.lcarsBlue3;
+    } else if (barPercentage < 30) {
+      return theme?.colors?.lcarsBlue2;
+    } else if (barPercentage < 40) {
+      return theme?.colors?.lcarsGreen1;
+    } else if (barPercentage < 50) {
+      return theme?.colors?.lcarsGreen2;
+    } else if (barPercentage < 60) {
+      return theme?.colors?.lcarsGreen3;
+    } else if (barPercentage < 70) {
+      return theme?.colors?.lcarsOrange1;
+    } else if (barPercentage < 80) {
+      return theme?.colors?.lcarsRed1;
+    } else if (barPercentage < 90) {
+      return theme?.colors?.lcarsRed2;
+    } else {
+      return theme?.colors?.lcarsRed3;
+    }
+  };
   const barPercentage = calculateBarPercentage();
 
+  const barColor = calculateBarColor(barPercentage);
   return (
     <Flex sx={{ alignItems: "center", width: "100%", mb: 3 }}>
       {/* Left label */}
@@ -167,11 +188,14 @@ export const SensorBar: React.FC<{
           width: 8,
           mr: 0,
           textAlign: "left",
-          color: highlightColor,
+          color: theme.colors?.lcarsYellow1,
           px: 0,
           fontWeight: "bold",
           height: 6,
           alignContent: "center",
+          fontSize: 2,
+          textOverflow: "ellipsis",
+          overflow: "hidden",
         }}
       >
         {label}
@@ -182,8 +206,8 @@ export const SensorBar: React.FC<{
         sx={{
           flex: 1,
           height: 6,
-          backgroundColor: theme?.colors?.lcarsBackground,
-          border: `1px solid ${highlightColor}`,
+          backgroundColor: theme?.colors?.lcarsYellow1,
+          border: `2px solid ${theme?.colors?.lcarsYellow1}`,
           position: "relative",
           mr: 2,
         }}
@@ -192,8 +216,8 @@ export const SensorBar: React.FC<{
           sx={{
             height: "100%",
             width: `${barPercentage}%`,
-            backgroundColor: highlightColor,
-            borderRight: `2px solid ${theme?.colors?.lcarsBackground}`,
+            backgroundColor: barColor,
+            borderRight: `2px solid ${barColor}`,
           }}
         >
           {/* Vertical lines pattern */}
@@ -224,11 +248,15 @@ export const SensorBar: React.FC<{
       <Box
         sx={{
           width: "100px",
+          height: 6,
           p: 0,
           fontWeight: "bold",
-          color: highlightColor,
-          textAlign: "right",
+          fontSize: 3,
+          color: barColor,
+          textAlign: "left",
           alignContent: "center",
+          textOverflow: "ellipsis",
+          overflow: "hidden",
         }}
       >
         {getFormattedValue()}
@@ -285,44 +313,220 @@ export const GroupedSensorDisplay: React.FC<{ accessory: AccessoryType }> = ({
         width: "100%",
         maxWidth: "800px",
         backgroundColor: theme?.colors?.lcarsBackground,
-        borderRadius: "8px",
         overflow: "hidden",
         mb: 4,
-        border: `1px solid ${theme?.colors?.lcarsYellow1}`,
       }}
     >
       {/* Header */}
-      <Box
-        sx={{
-          backgroundColor: theme?.colors?.lcarsYellow1,
-          color: theme?.colors?.lcarsBackground,
-          fontWeight: "bold",
-          textAlign: "left",
-          pl: 3,
-          fontSize: 2,
-          height: 5,
-        }}
-      >
-        {getGroupName()}
-      </Box>
+      <Box>
+        <Flex sx={{ flexDirection: "column", position: "relative", gap: 0 }}>
+          <Flex sx={{ flexDirection: "row", position: "relative", gap: 1 }}>
+            <Box
+              sx={{
+                width: 8,
+                height: 5,
+                minHeight: 5,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                position: "relative",
+                borderRadius: "100vmax 0 0 0 ",
+                "::before": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  background: `linear-gradient(to bottom right, ${theme?.colors?.lcarsYellow1} 50%, ${theme?.colors?.lcarsColourBlack} 50%)`,
+                  position: "absolute",
+                  left: 4,
+                  top: 5,
+                  zIndex: "1",
+                },
+                "::after": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  backgroundColor: theme?.colors?.lcarsBackground,
+                  borderRadius: "100vmax 0 0 0 ",
+                  position: "absolute",
+                  left: 4,
+                  top: 5,
+                  zIndex: "1",
+                },
+              }}
+            ></Box>
 
-      {/* Sensor bars */}
-      <Box sx={{ p: 3 }}>
-        {filteredAccessories.map((sensor, index) => {
-          // Alternate colors for different sensor types
-          const highlightColor = sensor.type?.includes("Temperature")
-            ? theme?.colors?.lcarsOrange1
-            : theme?.colors?.lcarsYellow1;
+            <Box
+              sx={{
+                color: theme?.colors?.lcarsYellow1,
+                fontWeight: "bold",
+                textAlign: "center",
+                fontSize: 2,
+                height: 5,
+              }}
+            >
+              {getGroupName()}
+            </Box>
+            <Box
+              sx={{
+                height: 5,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                color: theme?.colors?.lcarsBackground,
+                py: 2,
+                position: "relative",
+                flex: 1,
+              }}
+            ></Box>
+            <Box
+              sx={{
+                height: 5,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                color: theme?.colors?.lcarsBackground,
+                py: 2,
+                position: "relative",
+                borderRadius: " 0 100vmax 0 0 ",
+                width: 9,
+                "::before": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  background: `linear-gradient(to bottom left, ${theme?.colors?.lcarsYellow1} 50%, ${theme?.colors?.lcarsColourBlack} 50%)`,
+                  position: "absolute",
+                  right: 7,
+                  top: 5,
+                  zIndex: "1",
+                },
+                "::after": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  backgroundColor: theme?.colors?.lcarsBackground,
+                  borderRadius: " 0 100vmax 0 0 ",
+                  position: "absolute",
+                  right: 7,
+                  top: 5,
+                  zIndex: "1",
+                },
+              }}
+            ></Box>
+          </Flex>
+          <Flex>
+            <Box
+              sx={{
+                width: 4,
+                minHeight: 8,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                position: "relative",
+              }}
+            ></Box>
+            <Box
+              sx={{
+                flex: 1,
+                flexDirection: "column",
+                position: "relative",
+                zIndex: 2,
+              }}
+            >
+              <Box sx={{ p: 3 }}>
+                {filteredAccessories.map((sensor, index) => {
+                  return (
+                    <SensorBar
+                      key={sensor.uniqueId}
+                      accessory={sensor}
+                      label={getSensorLabel(sensor)}
+                    />
+                  );
+                })}
+              </Box>
+            </Box>
+            <Box
+              sx={{
+                width: 7,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                position: "relative",
+              }}
+            ></Box>
+          </Flex>
+          <Flex sx={{ flexDirection: "row", position: "relative", gap: 1 }}>
+            <Box
+              sx={{
+                width: 8,
+                height: 5,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                position: "relative",
+                borderRadius: " 0 0 0 100vmax",
+                "::before": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  background: `linear-gradient(to top right, ${theme?.colors?.lcarsYellow1} 50%, ${theme?.colors?.lcarsColourBlack} 50%)`,
+                  position: "absolute",
+                  left: 4,
+                  bottom: 5,
+                  zIndex: "1",
+                },
+                "::after": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  backgroundColor: theme?.colors?.lcarsBackground,
+                  borderRadius: "0 0 0 100vmax",
+                  position: "absolute",
+                  left: 4,
+                  bottom: 5,
+                  zIndex: "1",
+                },
+              }}
+            ></Box>
 
-          return (
-            <SensorBar
-              key={sensor.uniqueId}
-              accessory={sensor}
-              label={getSensorLabel(sensor)}
-              highlightColor={highlightColor}
-            />
-          );
-        })}
+            <Box
+              sx={{
+                height: 5,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                color: theme?.colors?.lcarsBackground,
+                position: "relative",
+                flex: 1,
+              }}
+            ></Box>
+            <Box
+              sx={{
+                height: 5,
+                backgroundColor: theme?.colors?.lcarsYellow1,
+                color: theme?.colors?.lcarsBackground,
+                position: "relative",
+                borderRadius: "0 0 100vmax 0",
+                width: 9,
+                "::before": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  background: `linear-gradient(to top left, ${theme?.colors?.lcarsYellow1} 50%, ${theme?.colors?.lcarsColourBlack} 50%)`,
+                  position: "absolute",
+                  right: 7,
+                  bottom: 5,
+                  zIndex: "1",
+                },
+                "::after": {
+                  content: "''",
+                  display: "block",
+                  width: 6,
+                  height: 6,
+                  backgroundColor: theme?.colors?.lcarsBackground,
+                  borderRadius: " 0  0  100vmax 0 ",
+                  position: "absolute",
+                  right: 7,
+                  bottom: 5,
+                  zIndex: "1",
+                },
+              }}
+            ></Box>
+          </Flex>
+          {/* Sensor bars */}
+        </Flex>
       </Box>
     </Box>
   );
