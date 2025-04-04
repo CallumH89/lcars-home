@@ -20,8 +20,6 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
             ? theme?.colors?.lcarsYellow3
             : theme?.colors?.lcarsInactive,
           color: theme?.colors?.text,
-          px: 3,
-          py: 2,
           mr: 1,
           borderRadius: "100vmax 0 0 100vmax",
           cursor: "pointer",
@@ -29,10 +27,7 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
           "&:hover": {
             bg: "secondary",
           },
-          minWidth: "40px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          width: "40px",
           position: "relative",
         }}
       ></Box>
@@ -42,7 +37,7 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
         sx={{
           bg: theme?.colors?.lcarsYellow1,
           color: theme?.colors?.text,
-          px: 3,
+          height: 7,
           py: 2,
           borderRadius: "0 100vmax 100vmax 0",
           cursor: "pointer",
@@ -51,12 +46,10 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
             bg: "secondary",
           },
           minWidth: "200px",
-          display: "flex",
-          flexDirection: "column",
-          textAlign: "left",
-          alignItems: "left",
           position: "relative",
           textTransform: "uppercase",
+          fontWeight: "bold",
+          textAlign: "left",
         }}
       >
         {accessory.nameInfo || `Accessory`}

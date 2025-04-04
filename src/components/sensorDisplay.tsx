@@ -181,7 +181,14 @@ export const SensorBar: React.FC<{
 
   const barColor = calculateBarColor(barPercentage);
   return (
-    <Flex sx={{ alignItems: "center", width: "100%", mb: 3 }}>
+    <Flex
+      sx={{
+        alignItems: "center",
+        width: "100%",
+        mb: 3,
+        ":last-of-type": { mb: 0 },
+      }}
+    >
       {/* Left label */}
       <Box
         sx={{

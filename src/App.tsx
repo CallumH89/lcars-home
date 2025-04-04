@@ -466,7 +466,7 @@ const App: React.FC = () => {
                 </Flex>
               </Flex>
             </Box>
-            <Box>
+            <Flex sx={{ flexDirection: "column" }}>
               <Flex sx={{ flexDirection: "row", gap: 1 }}>
                 <Box
                   sx={{
@@ -485,20 +485,29 @@ const App: React.FC = () => {
                   }}
                 ></Box>
               </Flex>
+
               {activeRoom ? (
-                <Box sx={{ py: 6, px: 6, position: "relative", zIndex: 2 }}>
+                <Box sx={{ px: 6, position: "relative", zIndex: 2 }}>
                   {Object.entries(getActiveRoomAccessories()).map(
                     ([roomName, typeGroups]) => (
                       <Box key={roomName}>
+                        <Box
+                          sx={{
+                            height: "76px",
+                            mb: 1,
+                            pt: 1,
+                            fontSize: 5,
+                            fontWeight: "bold",
+                            alignContent: "center",
+                            textAlign: "left",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {roomName} SUBSYSTEM
+                        </Box>
                         {sortTypeEntries(Object.entries(typeGroups)).map(
                           ([typeName, typeAccessories]) => (
                             <Box key={`${roomName}-${typeName}`} mb={5}>
-                              {typeName.toLowerCase() !== "sensor" && (
-                                <Heading as="h4" mb={2} sx={{ fontSize: 3 }}>
-                                  {typeName}s
-                                </Heading>
-                              )}
-
                               <Flex
                                 sx={{
                                   flexWrap: "wrap",
@@ -533,7 +542,7 @@ const App: React.FC = () => {
               ) : (
                 <Text>Select a room to see accessories</Text>
               )}
-            </Box>
+            </Flex>
           </Grid>
         </>
       )}
