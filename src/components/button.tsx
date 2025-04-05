@@ -38,9 +38,6 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
           borderRadius: "0 100vmax 100vmax 0",
           cursor: "pointer",
           transition: "background-color 0.2s",
-          "&:hover": {
-            bg: "secondary",
-          },
           minWidth: "200px",
           position: "relative",
           textTransform: "uppercase",

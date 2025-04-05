@@ -50,7 +50,7 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
     >
       <Box
         sx={{
-          width: "500px",
+          width: "600px",
           maxWidth: "90%",
           backgroundColor: theme?.colors?.lcarsBackground,
           borderRadius: "8px",
@@ -174,14 +174,19 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
                   zIndex: 2,
                 }}
               >
-                <Box sx={{ p: 3 }}>
+                <Box
+                  sx={{
+                    px: 7,
+                    py: 6,
+                  }}
+                >
                   <Box
                     sx={{
-                      padding: 4,
                       color: theme?.colors?.lcarsRed1,
                       fontFamily: "Antonio, sans-serif",
                       textTransform: "uppercase",
                       fontSize: 3,
+                      mb: 6,
                     }}
                   >
                     <Text>Error: {error}</Text>
@@ -190,12 +195,10 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
                   <Flex
                     sx={{
                       justifyContent: "flex-end",
-                      padding: 3,
                     }}
                   >
                     <Box
                       sx={{
-                        padding: "10px 20px",
                         backgroundColor: theme?.colors?.lcarsRed2,
                         color: theme?.colors?.lcarsBackground,
                         fontFamily: "Antonio, sans-serif",
@@ -203,6 +206,13 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
                         cursor: "pointer",
                         fontWeight: "bold",
                         borderRadius: "100vmax",
+                        alignContent: "center",
+                        textAlign: "center",
+                        height: 7,
+                        py: 2,
+                        transition: "background-color 0.2s",
+                        minWidth: "200px",
+                        fontSize: 3,
                         "&:hover": {
                           backgroundColor: theme?.colors?.lcarsRed2,
                         },
