@@ -16,6 +16,7 @@ import {
 import { GroupedSensorDisplay } from "./components/sensorDisplay.tsx";
 import "./fonts.css";
 import WeatherDisplay from "./components/weatherDisplay.tsx";
+import ErrorModal from "./components/errorModal.tsx";
 
 const App: React.FC = () => {
   const [accessories, setAccessories] = useState<AccessoryType[]>([]);
@@ -28,6 +29,7 @@ const App: React.FC = () => {
     getCurrentDateTime("-")
   );
   const [weatherRefreshTrigger, setWeatherRefreshTrigger] = useState<number>(0);
+  const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
 
   const accessoriesRef = useRef<AccessoryType[]>([]);
   const authTokenRef = useRef<string | null>(null);
@@ -99,7 +101,8 @@ const App: React.FC = () => {
       authTokenRef.current,
       homebridgeConfig.server,
       homebridgeConfig.accessoriesEndpoint,
-      setAccessories
+      setAccessories,
+      setError
     );
   };
 
@@ -116,7 +119,8 @@ const App: React.FC = () => {
       authTokenRef.current,
       homebridgeConfig.server,
       homebridgeConfig.accessoriesEndpoint,
-      setAccessories
+      setAccessories,
+      setError
     );
   }, []);
 
@@ -156,6 +160,21 @@ const App: React.FC = () => {
 
     return () => clearInterval(accessoryRefreshInterval);
   }, [activeRoom, checkAndRefreshToken, refreshActiveRoomAccessories]);
+
+  // Show error modal when error state changes
+  useEffect(() => {
+    if (error) {
+      setShowErrorModal(true);
+    } else {
+      setShowErrorModal(false);
+    }
+  }, [error]);
+
+  // Function to close the error modal
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
+    setError(null);
+  };
 
   useEffect(() => {
     if (!tokenExpiry) return;
@@ -223,10 +242,13 @@ const App: React.FC = () => {
         flexDirection: "column",
       }}
     >
+      {/* Error modal */}
+      {showErrorModal && (
+        <ErrorModal error={error} onClose={handleCloseErrorModal} />
+      )}
+
       {loading ? (
         <Text sx={{ textAlign: "center" }}>Loading accessories...</Text>
-      ) : error ? (
-        <Text sx={{ textAlign: "center", color: "red" }}>Error: {error}</Text>
       ) : (
         <>
           <Grid
@@ -295,7 +317,10 @@ const App: React.FC = () => {
               <Flex
                 sx={{ flex: 1, pb: 6, px: 6, gap: 3, zIndex: 2, ml: "40px" }}
               >
-                <WeatherDisplay refreshTrigger={weatherRefreshTrigger} />
+                <WeatherDisplay
+                  refreshTrigger={weatherRefreshTrigger}
+                  setError={setError}
+                />
               </Flex>
               <Flex sx={{ flexDirection: "row", gap: 1 }}>
                 <Box
@@ -376,6 +401,27 @@ const App: React.FC = () => {
                     {roomName}
                   </NavLink>
                 ))}
+                <NavLink
+                  key={"roomName"}
+                  onClick={() =>
+                    setError(
+                      "Missing authentication token. Please refresh the page."
+                    )
+                  }
+                  sx={{
+                    height: 7,
+                    mb: 1,
+                    backgroundColor: theme?.colors?.lcarsYellow2,
+                    padding: 2,
+                    borderRadius: 0,
+                    textAlign: "center",
+                    alignContent: "center",
+                    bg: theme?.colors?.lcarsYellow1,
+                    color: theme?.colors?.lcarsBackground,
+                  }}
+                >
+                  error test
+                </NavLink>
               </Flex>
 
               <Box

@@ -212,11 +212,14 @@ export const handleAccessoryClick = async (
   authToken: string | null,
   homebridgeServer: string,
   accessoriesEndpoint: string,
-  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>
+  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>,
+  setError?: Dispatch<SetStateAction<string | null>>
 ): Promise<void> => {
   try {
     if (!authToken) {
       console.error("Missing auth token");
+      if (setError)
+        setError("Missing authentication token. Please refresh the page.");
       return;
     }
 
@@ -275,9 +278,17 @@ export const handleAccessoryClick = async (
     );
   } catch (err) {
     console.error("Error toggling accessory:", err);
-    alert(
-      `Failed to toggle ${accessory.nameInfo}: ${err instanceof Error ? err.message : "Unknown error"}`
-    );
+    // Use the error modal instead of alert
+    if (setError) {
+      setError(
+        `Failed to toggle ${accessory.nameInfo}: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    } else {
+      // Fallback to console error if setError is not provided
+      console.error(
+        `Failed to toggle ${accessory.nameInfo}: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    }
   }
 };
 
@@ -286,9 +297,14 @@ export const refreshAccessoryState = async (
   authToken: string | null,
   homebridgeServer: string,
   accessoriesEndpoint: string,
-  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>
+  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>,
+  setError?: Dispatch<SetStateAction<string | null>>
 ): Promise<void> => {
-  if (!authToken) return;
+  if (!authToken) {
+    if (setError)
+      setError("Missing authentication token. Please refresh the page.");
+    return;
+  }
 
   try {
     const response = await fetch(
@@ -303,9 +319,9 @@ export const refreshAccessoryState = async (
     );
 
     if (!response.ok) {
-      console.error(
-        `Failed to refresh accessory ${uniqueId}: ${response.statusText}`
-      );
+      const errorMessage = `Failed to refresh accessory ${uniqueId}: ${response.statusText}`;
+      console.error(errorMessage);
+      if (setError) setError(errorMessage);
       return;
     }
 
@@ -318,6 +334,10 @@ export const refreshAccessoryState = async (
     );
   } catch (err) {
     console.error(`Error refreshing accessory ${uniqueId}:`, err);
+    if (setError)
+      setError(
+        `Error refreshing accessory: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
   }
 };
 
@@ -328,9 +348,14 @@ export const refreshRoomAccessories = (
   authToken: string | null,
   homebridgeServer: string,
   accessoriesEndpoint: string,
-  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>
+  setAccessories: Dispatch<SetStateAction<AccessoryType[]>>,
+  setError?: Dispatch<SetStateAction<string | null>>
 ): void => {
-  if (!roomName || !authToken) return;
+  if (!roomName || !authToken) {
+    if (!authToken && setError)
+      setError("Missing authentication token. Please refresh the page.");
+    return;
+  }
 
   console.log(`Refreshing accessories in room: ${roomName}`);
 
@@ -344,7 +369,8 @@ export const refreshRoomAccessories = (
         authToken,
         homebridgeServer,
         accessoriesEndpoint,
-        setAccessories
+        setAccessories,
+        setError
       );
     });
   });
@@ -353,7 +379,8 @@ export const refreshRoomAccessories = (
 export const getWeather = async (
   key: string,
   q: string,
-  setWeatherData: Dispatch<SetStateAction<object | null>>
+  setWeatherData: Dispatch<SetStateAction<object | null>>,
+  setError?: Dispatch<SetStateAction<string | null>>
 ): Promise<void> => {
   try {
     const weatherResponse = await fetch(
@@ -367,11 +394,22 @@ export const getWeather = async (
       }
     );
 
+    if (!weatherResponse.ok) {
+      const errorMessage = `Failed to fetch weather data: ${weatherResponse.statusText}`;
+      console.error(errorMessage);
+      if (setError) setError(errorMessage);
+      return;
+    }
+
     const weatherData = await weatherResponse.json();
     setWeatherData(weatherData);
     console.log("weatherData successful:", weatherData);
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Error fetching weather:", err);
+    if (setError)
+      setError(
+        `Error retrieving weather data: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
   }
 };
 
