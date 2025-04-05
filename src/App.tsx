@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Container, Box, Flex, Heading, Text, Grid, NavLink } from "theme-ui";
+import { Container, Box, Flex, Text, Grid, NavLink } from "theme-ui";
 import LcarsButton from "./components/button.tsx";
 import { theme } from "./createTheme.tsx";
 import { homebridgeConfig } from "./config.ts";

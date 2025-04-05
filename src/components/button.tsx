@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Flex, Text } from "theme-ui";
+import { Box, Button, Flex } from "theme-ui";
 import { theme } from "../createTheme.tsx";
 
 interface Props {
@@ -8,10 +8,6 @@ interface Props {
 }
 
 const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
-  // Check if this is a group of accessories
-  const isGroup = accessory.isGroup;
-  const accessoryCount = isGroup ? accessory.groupedAccessories.length : 1;
-
   return (
     <Flex>
       <Box
@@ -53,29 +49,6 @@ const LcarsButton: React.FC<Props> = ({ accessory, handleAccessoryClick }) => {
         }}
       >
         {accessory.nameInfo || `Accessory`}
-
-        {/* If this is a group, add a small indicator */}
-        {/*isGroup && (
-          <Text
-            as="div"
-            sx={{
-              position: "absolute",
-              top: 1,
-              right: 2,
-              fontSize: "10px",
-              backgroundColor: theme?.colors?.lcarsInactive,
-              color: theme?.colors?.lcarsWhite,
-              borderRadius: "50%",
-              width: "18px",
-              height: "18px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {accessoryCount}
-          </Text>
-        )*/}
       </Button>
     </Flex>
   );

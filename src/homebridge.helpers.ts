@@ -198,7 +198,6 @@ export const fetchAccessories = async (
     }
 
     const accessoriesData = await accessoriesResponse.json();
-    console.log("Accessories:", accessoriesData);
     setAccessories(accessoriesData);
     setLoading(false);
   } catch (err) {
@@ -215,7 +214,6 @@ export const handleAccessoryClick = async (
   accessoriesEndpoint: string,
   setAccessories: Dispatch<SetStateAction<AccessoryType[]>>
 ): Promise<void> => {
-  console.log(accessory);
   try {
     if (!authToken) {
       console.error("Missing auth token");
@@ -418,6 +416,18 @@ export const defaultAccessoriesToDisplay: AccessoryInfoType[] = [
     type: "Light",
     room: "Bedroom",
     name: "Bedside Lamp",
+  },
+  {
+    serviceName: "Left",
+    type: "Light",
+    room: "Bedroom",
+    name: "KJ Lamp",
+  },
+  {
+    serviceName: "Right",
+    type: "Light",
+    room: "Bedroom",
+    name: "Havok Lamp",
   },
   {
     serviceName: "0xa4c13892132d2083",

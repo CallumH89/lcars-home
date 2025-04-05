@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "theme-ui";
-import { theme } from "../createTheme.tsx";
 import { weatherConfig } from "../config.ts";
 import { getWeather } from "../homebridge.helpers.ts";
 
