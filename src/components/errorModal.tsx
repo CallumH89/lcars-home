@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
-import { Box, Flex, Text } from "theme-ui";
+import { Box, Flex, Text, Image } from "theme-ui";
 import { theme } from "../createTheme.tsx";
-
 interface ErrorModalProps {
   error: string | null;
   onClose: () => void;
@@ -52,7 +51,6 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
         sx={{
           width: "600px",
           maxWidth: "90%",
-          backgroundColor: theme?.colors?.lcarsBackground,
           borderRadius: "8px",
           overflow: "hidden",
           animation: "slideIn 0.3s ease-out",
@@ -64,8 +62,24 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <Box>
+          <Image
+            src={require("../images/starfleet-q.png")}
+            sx={{
+              position: "absolute",
+              height: 11,
+              right: 0,
+              bottom: 0,
+            }}
+          ></Image>
           <Flex sx={{ flexDirection: "column", position: "relative", gap: 0 }}>
-            <Flex sx={{ flexDirection: "row", position: "relative", gap: 1 }}>
+            <Flex
+              sx={{
+                flexDirection: "row",
+                position: "relative",
+                gap: 1,
+                backgroundColor: theme?.colors?.lcarsBackground,
+              }}
+            >
               <Box
                 sx={{
                   width: 8,
@@ -157,7 +171,12 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
                 }}
               ></Box>
             </Flex>
-            <Flex>
+            <Flex
+              sx={{
+                backgroundColor: theme?.colors?.lcarsBackground,
+                position: "relative",
+              }}
+            >
               <Box
                 sx={{
                   width: 4,

@@ -102,6 +102,7 @@ export const theme: Theme = {
     "100px",
     "185px",
     "215px",
+    "315px",
   ],
   sizes: [
     0,
@@ -115,5 +116,6 @@ export const theme: Theme = {
     "100px",
     "185px",
     "215px",
+    "315px",
   ],
 };
