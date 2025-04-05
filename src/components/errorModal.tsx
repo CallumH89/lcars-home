@@ -47,6 +47,15 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
       }}
       onClick={onClose}
     >
+      <Image
+        src={require("../images/starfleet-q.png")}
+        sx={{
+          position: "absolute",
+          height: 11,
+          right: 0,
+          bottom: 0,
+        }}
+      ></Image>
       <Box
         sx={{
           width: "600px",
@@ -62,15 +71,6 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <Box>
-          <Image
-            src={require("../images/starfleet-q.png")}
-            sx={{
-              position: "absolute",
-              height: 11,
-              right: 0,
-              bottom: 0,
-            }}
-          ></Image>
           <Flex sx={{ flexDirection: "column", position: "relative", gap: 0 }}>
             <Flex
               sx={{
