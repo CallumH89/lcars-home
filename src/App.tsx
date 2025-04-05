@@ -401,27 +401,6 @@ const App: React.FC = () => {
                     {roomName}
                   </NavLink>
                 ))}
-                <NavLink
-                  key={"roomName"}
-                  onClick={() =>
-                    setError(
-                      "Missing authentication token. Please refresh the page."
-                    )
-                  }
-                  sx={{
-                    height: 7,
-                    mb: 1,
-                    backgroundColor: theme?.colors?.lcarsYellow2,
-                    padding: 2,
-                    borderRadius: 0,
-                    textAlign: "center",
-                    alignContent: "center",
-                    bg: theme?.colors?.lcarsYellow1,
-                    color: theme?.colors?.lcarsBackground,
-                  }}
-                >
-                  error test
-                </NavLink>
               </Flex>
 
               <Box
